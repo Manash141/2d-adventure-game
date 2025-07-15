@@ -1,0 +1,154 @@
+// Get references to canvas and context
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Player settings
+const player = {
+    width: 50,
+    height: 50,
+    x: canvas.width / 2 - 25,
+    y: canvas.height / 2 - 25,
+    speed: 5,
+    color: 'green',
+    dx: 0,
+    dy: 0
+};
+
+// Collectibles settings
+const collectibles = [];
+const collectibleRadius = 20;
+const maxCollectibles = 5;
+
+// Obstacles settings
+const obstacles = [];
+const obstacleWidth = 60;
+const obstacleHeight = 60;
+
+// Score
+let score = 0;
+
+// Game loop settings
+let gameOver = false;
+let gameInterval;
+
+// Key controls (for movement)
+let keys = {};
+
+// Generate collectibles and obstacles
+function generateCollectible() {
+    const x = Math.random() * (canvas.width - collectibleRadius * 2) + collectibleRadius;
+    const y = Math.random() * (canvas.height - collectibleRadius * 2) + collectibleRadius;
+    collectibles.push({ x, y });
+}
+
+function generateObstacle() {
+    const x = Math.random() * (canvas.width - obstacleWidth);
+    const y = Math.random() * (canvas.height - obstacleHeight);
+    obstacles.push({ x, y });
+}
+
+// Handle movement
+function movePlayer() {
+    if (keys['ArrowUp']) player.dy = -player.speed;
+    else if (keys['ArrowDown']) player.dy = player.speed;
+    else player.dy = 0;
+
+    if (keys['ArrowLeft']) player.dx = -player.speed;
+    else if (keys['ArrowRight']) player.dx = player.speed;
+    else player.dx = 0;
+
+    player.x += player.dx;
+    player.y += player.dy;
+
+    // Prevent player from going off-screen
+    if (player.x < 0) player.x = 0;
+    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+    if (player.y < 0) player.y = 0;
+    if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
+}
+
+// Collision detection with collectibles
+function checkCollectibleCollision() {
+    for (let i = 0; i < collectibles.length; i++) {
+        const c = collectibles[i];
+        const dist = Math.hypot(c.x - player.x, c.y - player.y);
+
+        if (dist < collectibleRadius + player.width / 2) {
+            collectibles.splice(i, 1);
+            score += 10;
+            document.getElementById('score').innerText = `Score: ${score}`;
+            if (collectibles.length < maxCollectibles) {
+                generateCollectible();
+            }
+        }
+    }
+}
+
+// Collision detection with obstacles
+function checkObstacleCollision() {
+    for (const obstacle of obstacles) {
+        if (player.x < obstacle.x + obstacleWidth &&
+            player.x + player.width > obstacle.x &&
+            player.y < obstacle.y + obstacleHeight &&
+            player.y + player.height > obstacle.y) {
+            gameOver = true;
+            clearInterval(gameInterval);
+            alert("Game Over! You hit an obstacle!");
+            break;
+        }
+    }
+}
+
+// Draw everything on the canvas
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+    // Draw player
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Draw collectibles
+    ctx.fillStyle = 'yellow';
+    for (const c of collectibles) {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, collectibleRadius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Draw obstacles
+    ctx.fillStyle = 'red';
+    for (const obs of obstacles) {
+        ctx.fillRect(obs.x, obs.y, obstacleWidth, obstacleHeight);
+    }
+}
+
+// Game loop
+function gameLoop() {
+    if (!gameOver) {
+        movePlayer();
+        checkCollectibleCollision();
+        checkObstacleCollision();
+        draw();
+    }
+}
+
+// Start the game
+function startGame() {
+    generateCollectible();
+    for (let i = 0; i < 3; i++) generateObstacle();
+    
+    gameInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
+}
+
+// Listen for key presses (to move the player)
+window.addEventListener('keydown', (e) => {
+    keys[e.key] = true;
+});
+
+window.addEventListener('keyup', (e) => {
+    keys[e.key] = false;
+});
+
+// Start the game when the page loads
+window.onload = startGame;
+

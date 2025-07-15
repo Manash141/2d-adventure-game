@@ -1,0 +1,27 @@
+/* Basic reset and page styling */
+body {
+    margin: 0;
+    overflow: hidden;  /* Prevents the browser from adding scrollbars */
+    background-color: #f0f0f0;  /* Light gray background */
+    display: flex;
+    justify-content: center;  /* Center the canvas horizontally */
+    align-items: center;  /* Center the canvas vertically */
+    height: 100vh;  /* Full viewport height */
+}
+
+/* Canvas styling */
+canvas {
+    border: 2px solid black;  /* Black border around the game area */
+    background-color: #fff;  /* White background for the game */
+}
+
+/* Score styling */
+#score {
+    position: absolute;  /* Absolute position to place it on the screen */
+    top: 10px;
+    left: 10px;
+    font-size: 24px;  /* Larger font size for the score */
+    color: #333;  /* Dark gray text */
+    z-index: 10;  /* Make sure the score is above the canvas */
+    font-family: Arial, sans-serif;  /* Font style */
+}
